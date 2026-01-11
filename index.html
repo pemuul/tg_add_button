@@ -1,0 +1,533 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Telegram: добавить кнопку к посту</title>
+  <style>
+    :root{
+      --bg1:#0b1020; --bg2:#0f2b3a;
+      --card:#0f172aee; --muted:#93a4c7; --text:#e7efff;
+      --accent:#7c3aed; --accent2:#22c55e; --danger:#ef4444;
+      --border:#26314d; --shadow: 0 20px 60px rgba(0,0,0,.45);
+      --radius:18px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: var(--sans);
+      color:var(--text);
+      background:
+        radial-gradient(1200px 600px at 20% -10%, rgba(124,58,237,.45), transparent 60%),
+        radial-gradient(1000px 600px at 110% 10%, rgba(34,197,94,.28), transparent 55%),
+        linear-gradient(160deg, var(--bg1), var(--bg2));
+      min-height:100vh;
+    }
+    .wrap{max-width:980px;margin:0 auto;padding:28px 18px 60px}
+    header{
+      display:flex;gap:14px;align-items:center;justify-content:space-between;
+      margin-bottom:18px;
+    }
+    .brand{
+      display:flex;gap:12px;align-items:center;
+    }
+    .logo{
+      width:44px;height:44px;border-radius:14px;
+      background: linear-gradient(135deg, rgba(124,58,237,.95), rgba(34,197,94,.85));
+      box-shadow: 0 12px 30px rgba(124,58,237,.25);
+    }
+    h1{font-size:18px;letter-spacing:.2px;margin:0}
+    .sub{margin:2px 0 0;color:var(--muted);font-size:13px}
+    .grid{
+      display:grid;grid-template-columns:1.15fr .85fr;gap:16px;margin-top:14px;
+    }
+    @media (max-width: 920px){ .grid{grid-template-columns:1fr} }
+    .card{
+      background: var(--card);
+      border:1px solid rgba(38,49,77,.9);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding:16px;
+    }
+    .card h2{margin:0 0 10px;font-size:14px;color:#cfe0ff}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media (max-width: 620px){ .row{grid-template-columns:1fr} }
+    label{display:block;font-size:12px;color:var(--muted);margin:10px 0 6px}
+    input, textarea{
+      width:100%;
+      background: rgba(2,6,23,.6);
+      border:1px solid rgba(38,49,77,.95);
+      color:var(--text);
+      padding:11px 12px;
+      border-radius: 14px;
+      outline:none;
+    }
+    textarea{min-height:92px;resize:vertical}
+    input:focus, textarea:focus{border-color: rgba(124,58,237,.75); box-shadow: 0 0 0 4px rgba(124,58,237,.18)}
+    .hint{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.35}
+    .actions{
+      display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:14px;
+    }
+    button{
+      border:0; cursor:pointer; color:white; font-weight:700;
+      padding:11px 14px; border-radius: 14px;
+      background: linear-gradient(135deg, rgba(124,58,237,.95), rgba(59,130,246,.9));
+      box-shadow: 0 16px 40px rgba(124,58,237,.18);
+    }
+    button.secondary{
+      background: rgba(2,6,23,.6);
+      border:1px solid rgba(38,49,77,.95);
+      color:#dbe7ff;
+      box-shadow:none;
+      font-weight:650;
+    }
+    button:disabled{opacity:.55;cursor:not-allowed}
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 10px;border-radius:999px;
+      background: rgba(2,6,23,.55);
+      border:1px solid rgba(38,49,77,.95);
+      color:#cfe0ff;font-size:12px;
+    }
+    .status{
+      margin-top:12px;
+      border-radius: 16px;
+      border:1px dashed rgba(38,49,77,.95);
+      background: rgba(2,6,23,.45);
+      padding:12px;
+      font-size:13px;
+      line-height:1.45;
+      white-space:pre-wrap;
+    }
+    .ok{border-color: rgba(34,197,94,.55)}
+    .bad{border-color: rgba(239,68,68,.6)}
+    .mono{font-family: var(--mono); font-size:12px}
+    .kv{
+      display:grid;grid-template-columns: 120px 1fr;gap:8px;
+      padding:10px;border-radius:16px;
+      background: rgba(2,6,23,.45); border:1px solid rgba(38,49,77,.95);
+      margin-top:10px;
+      font-size:13px;
+    }
+    .kv div:nth-child(odd){color:var(--muted)}
+    details{margin-top:10px}
+    summary{cursor:pointer;color:#cfe0ff}
+    a{color:#a7c7ff}
+    .tiny{font-size:11px;color:var(--muted)}
+    .spinner{
+      width:14px;height:14px;border-radius:999px;
+      border:2px solid rgba(255,255,255,.25);
+      border-top-color:white;
+      display:inline-block;
+      animation: spin .8s linear infinite;
+      vertical-align:-2px;
+      margin-right:6px;
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .examples{
+      display:flex;gap:8px;flex-wrap:wrap;margin-top:10px
+    }
+    .chip{
+      font-size:12px;color:#dbe7ff;
+      padding:8px 10px;border-radius:999px;
+      background: rgba(2,6,23,.55);
+      border:1px solid rgba(38,49,77,.95);
+      cursor:pointer;
+      user-select:none;
+    }
+    .chip:hover{border-color: rgba(124,58,237,.6)}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="logo" aria-hidden="true"></div>
+      <div>
+        <h1>Telegram • Добавить inline-кнопку к посту</h1>
+        <div class="sub">Один файл • локально • редактирует reply_markup через Bot API</div>
+      </div>
+    </div>
+    <div class="pill" title="Важное ограничение">
+      ⚠️ Кнопки можно менять только у сообщений, отправленных ботом
+    </div>
+  </header>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Данные</h2>
+
+      <label for="token">Токен бота</label>
+      <input id="token" type="password" autocomplete="off" placeholder="123456789:AA... (BotFather)" />
+      <div class="hint">Совет: это локальная страница, но всё равно не вставляйте токен в чужие сайты/облака.</div>
+
+      <label for="msgUrl">Ссылка на сообщение в канале</label>
+      <input id="msgUrl" type="text" placeholder="https://t.me/testpemchanel/37" />
+      <div class="hint">Поддерживается формат <span class="mono">https://t.me/&lt;username&gt;/&lt;message_id&gt;</span>. Для приватных каналов (<span class="mono">/c/...</span>) нужен числовой chat_id — эта страница его не вычисляет автоматически.</div>
+
+      <div class="row">
+        <div>
+          <label for="btnText">Текст кнопки</label>
+          <input id="btnText" type="text" placeholder="Например: Открыть" />
+        </div>
+        <div>
+          <label for="btnUrl">Ссылка на кнопке (url)</label>
+          <input id="btnUrl" type="text" placeholder="https://example.com или tg://..." />
+        </div>
+      </div>
+
+      <div class="examples">
+        <div class="chip" data-example="botStart">Пример: deep-link на бота</div>
+        <div class="chip" data-example="openChatPrefill">Пример: открыть чат + текст</div>
+        <div class="chip" data-example="share">Пример: Share-окно</div>
+      </div>
+
+      <div id="parsed" class="kv" style="display:none">
+        <div>chat_id</div><div class="mono" id="chatIdOut"></div>
+        <div>message_id</div><div class="mono" id="msgIdOut"></div>
+      </div>
+
+      <div class="actions">
+        <button id="go">Добавить кнопку</button>
+        <button id="toggleToken" class="secondary" type="button">Показать токен</button>
+        <button id="save" class="secondary" type="button">Сохранить поля</button>
+        <span class="tiny">Если запрос не проходит из браузера — ниже появится cURL.</span>
+      </div>
+
+      <div id="status" class="status">Готово. Заполните поля и нажмите «Добавить кнопку».</div>
+      <div id="curlBox" class="status mono" style="display:none"></div>
+    </div>
+
+    <div class="card">
+      <h2>Подсказки по ссылкам для кнопки</h2>
+
+      <div class="hint">
+        В inline-кнопке поле <span class="mono">url</span> может быть обычным <span class="mono">https://</span> или Telegram-deep-link <span class="mono">tg://</span>. :contentReference[oaicite:1]{index=1}
+      </div>
+
+      <details open>
+        <summary><b>1) Deep-link на бота с данными</b></summary>
+        <div class="hint">
+          Формат: <span class="mono">https://t.me/&lt;bot_username&gt;?start=&lt;payload&gt;</span><br/>
+          Бот получит команду <span class="mono">/start payload</span>. Payload до 64 символов, допустимы A-Z a-z 0-9 <span class="mono">_</span> и <span class="mono">-</span>. :contentReference[oaicite:2]{index=2}
+        </div>
+        <div class="status mono" style="margin-top:10px">https://t.me/your_bot?start=order_12345</div>
+      </details>
+
+      <details>
+        <summary><b>2) Открыть чат с человеком и подставить текст</b></summary>
+        <div class="hint">
+          Можно открыть чат по username и предварительно заполнить поле ввода: <span class="mono">t.me/&lt;username&gt;?text=&lt;draft_text&gt;</span>. :contentReference[oaicite:3]{index=3}<br/>
+          Важно: это <u>не отправляет</u> сообщение автоматически — только вставляет текст в строку ввода.
+        </div>
+        <div class="status mono" style="margin-top:10px">https://t.me/someuser?text=Заявка%20%23123%0AИмя%3A%20Иван</div>
+      </details>
+
+      <details>
+        <summary><b>3) Окно “поделиться” (выбор чата)</b></summary>
+        <div class="hint">
+          Формат: <span class="mono">https://t.me/share/url?url={url}&text={text}</span> (оба значения URL-encoded). :contentReference[oaicite:4]{index=4}
+        </div>
+        <div class="status mono" style="margin-top:10px">https://t.me/share/url?url=https%3A%2F%2Fexample.com&text=Смотри%20ссылку</div>
+      </details>
+
+      <details>
+        <summary><b>4) Упоминание/открытие пользователя по user_id (tg://)</b></summary>
+        <div class="hint">
+          Можно использовать <span class="mono">tg://user?id=&lt;user_id&gt;</span> (с учётом privacy). :contentReference[oaicite:5]{index=5}
+        </div>
+        <div class="status mono" style="margin-top:10px">tg://user?id=123456789</div>
+      </details>
+
+      <details>
+        <summary><b>Важное про “добавить”, а не “заменить”</b></summary>
+        <div class="hint">
+          Метод <span class="mono">editMessageReplyMarkup</span> устанавливает новую клавиатуру. Чтобы “добавить к существующей”,
+          нужно знать текущую раскладку кнопок — Bot API не даёт получить произвольное сообщение по ссылке, поэтому эта страница делает
+          безопасный и предсказуемый вариант: <b>ставит клавиатуру из одной кнопки</b>.
+          :contentReference[oaicite:6]{index=6}
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <h2>Как пользоваться (коротко)</h2>
+    <ol style="margin:8px 0 0; padding-left:18px; color:#dbe7ff; line-height:1.55">
+      <li>Добавьте бота в канал админом и дайте право <b>публиковать</b> посты.</li>
+      <li>Изначально отправьте пост в канал <b>ботом</b> (например <span class="mono">sendPhoto</span> / <span class="mono">sendMessage</span>).</li>
+      <li>Скопируйте ссылку на пост вида <span class="mono">https://t.me/channel/37</span>.</li>
+      <li>Откройте этот файл (лучше через локальный сервер: <span class="mono">python -m http.server 8000</span> → <span class="mono">http://localhost:8000</span>).</li>
+      <li>Заполните поля и нажмите <b>«Добавить кнопку»</b>. Статус появится снизу.</li>
+    </ol>
+    <div class="hint" style="margin-top:10px">
+      Техническая справка: редактирование клавиатуры делается методом <span class="mono">editMessageReplyMarkup</span> с параметрами
+      <span class="mono">chat_id</span>, <span class="mono">message_id</span> и <span class="mono">reply_markup</span>. :contentReference[oaicite:7]{index=7}
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  const $ = (id)=>document.getElementById(id);
+
+  const tokenEl = $("token");
+  const msgUrlEl = $("msgUrl");
+  const btnTextEl = $("btnText");
+  const btnUrlEl  = $("btnUrl");
+  const goEl      = $("go");
+  const toggleTokenEl = $("toggleToken");
+  const saveEl = $("save");
+
+  const statusEl  = $("status");
+  const curlBoxEl = $("curlBox");
+  const parsedEl  = $("parsed");
+  const chatIdOut = $("chatIdOut");
+  const msgIdOut  = $("msgIdOut");
+
+  // --- helpers
+  function setStatus(text, kind){
+    statusEl.classList.remove("ok","bad");
+    if(kind==="ok") statusEl.classList.add("ok");
+    if(kind==="bad") statusEl.classList.add("bad");
+    statusEl.textContent = text;
+  }
+
+  function showCurl(cmd){
+    curlBoxEl.style.display = "block";
+    curlBoxEl.textContent = cmd;
+  }
+
+  function hideCurl(){
+    curlBoxEl.style.display = "none";
+    curlBoxEl.textContent = "";
+  }
+
+  function parseTgMessageUrl(raw){
+    // supports: https://t.me/<username>/<message_id>
+    // also accepts telegram.me / telegram.dog
+    let u;
+    try { u = new URL(raw.trim()); } catch(e){ throw new Error("Неверная ссылка на сообщение (URL не распознан)."); }
+
+    const host = u.hostname.replace(/^www\./,'').toLowerCase();
+    const okHosts = new Set(["t.me","telegram.me","telegram.dog"]);
+    if(!okHosts.has(host)) throw new Error("Ожидается ссылка с домена t.me (или telegram.me/telegram.dog).");
+
+    const parts = u.pathname.split("/").filter(Boolean);
+
+    // Private links like /c/<internal>/<msg> are not auto-supported here
+    if(parts[0] === "c"){
+      throw new Error("Ссылка формата /c/... (приватный канал). Нужен числовой chat_id вида -100..., который эта страница не вычисляет автоматически.");
+    }
+
+    if(parts.length < 2) throw new Error("Ссылка должна быть вида https://t.me/<channel>/<message_id>.");
+
+    const username = parts[0];
+    const messageId = Number(parts[1]);
+
+    if(!/^[A-Za-z0-9_]{3,}$/.test(username)) throw new Error("Не похоже на username канала в ссылке.");
+    if(!Number.isInteger(messageId) || messageId <= 0) throw new Error("message_id должен быть положительным числом (например .../37).");
+
+    return { chat_id: "@"+username, message_id: messageId };
+  }
+
+  function looksLikeToken(s){
+    // typical: digits:35-ish chars
+    return /^\d+:[A-Za-z0-9_-]{20,}$/.test(s.trim());
+  }
+
+  function looksLikeButtonUrl(s){
+    const v = s.trim();
+    if(!v) return false;
+    // allow: http(s), tg://, t.me links, telegram.me, telegram.dog
+    return /^(https?:\/\/|tg:\/\/|t\.me\/|telegram\.me\/|telegram\.dog\/)/i.test(v);
+  }
+
+  function buildReplyMarkup(text, url){
+    return {
+      inline_keyboard: [
+        [ { text, url } ]
+      ]
+    };
+  }
+
+  function buildCurl(token, payload){
+    const api = `https://api.telegram.org/bot${token}/editMessageReplyMarkup`;
+    const json = JSON.stringify(payload);
+    // safest cross-platform suggestion: show curl + JSON in single quotes (works in bash/zsh; for Windows users can adapt)
+    return [
+      "# Если браузер не дал сделать запрос (CORS), выполните в терминале:",
+      `curl -sS -X POST "${api}" \\`,
+      `  -H "Content-Type: application/json" \\`,
+      `  -d '${json.replace(/'/g,"'\\''")}'`,
+      "",
+      "# Ответ будет JSON: ok=true/false"
+    ].join("\n");
+  }
+
+  // --- UI logic
+  function updateParsed(){
+    try{
+      const {chat_id, message_id} = parseTgMessageUrl(msgUrlEl.value);
+      parsedEl.style.display = "grid";
+      chatIdOut.textContent = chat_id;
+      msgIdOut.textContent = String(message_id);
+      return {chat_id, message_id};
+    }catch(e){
+      parsedEl.style.display = "none";
+      chatIdOut.textContent = "";
+      msgIdOut.textContent = "";
+      return null;
+    }
+  }
+
+  msgUrlEl.addEventListener("input", updateParsed);
+
+  toggleTokenEl.addEventListener("click", ()=>{
+    if(tokenEl.type === "password"){
+      tokenEl.type = "text";
+      toggleTokenEl.textContent = "Скрыть токен";
+    }else{
+      tokenEl.type = "password";
+      toggleTokenEl.textContent = "Показать токен";
+    }
+  });
+
+  saveEl.addEventListener("click", ()=>{
+    const data = {
+      token: tokenEl.value.trim(),
+      msgUrl: msgUrlEl.value.trim(),
+      btnText: btnTextEl.value.trim(),
+      btnUrl: btnUrlEl.value.trim(),
+    };
+    localStorage.setItem("tg_btn_editor_v1", JSON.stringify(data));
+    setStatus("Сохранено в браузере (localStorage).", "ok");
+  });
+
+  function loadSaved(){
+    try{
+      const raw = localStorage.getItem("tg_btn_editor_v1");
+      if(!raw) return;
+      const d = JSON.parse(raw);
+      tokenEl.value = d.token || "";
+      msgUrlEl.value = d.msgUrl || "";
+      btnTextEl.value = d.btnText || "";
+      btnUrlEl.value  = d.btnUrl  || "";
+      updateParsed();
+      setStatus("Подгружены сохранённые поля. Можно нажимать «Добавить кнопку».", "ok");
+    }catch(_){}
+  }
+  loadSaved();
+
+  // examples
+  document.querySelectorAll("[data-example]").forEach(chip=>{
+    chip.addEventListener("click", ()=>{
+      const ex = chip.getAttribute("data-example");
+      if(ex==="botStart"){
+        btnTextEl.value = "Открыть бота";
+        btnUrlEl.value  = "https://t.me/your_bot?start=order_12345";
+      }else if(ex==="openChatPrefill"){
+        btnTextEl.value = "Написать менеджеру";
+        btnUrlEl.value  = "https://t.me/someuser?text=Заявка%20%23123%0AИмя%3A%20Иван";
+      }else if(ex==="share"){
+        btnTextEl.value = "Поделиться";
+        btnUrlEl.value  = "https://t.me/share/url?url=https%3A%2F%2Fexample.com&text=Смотри%20ссылку";
+      }
+    });
+  });
+
+  // --- main action
+  goEl.addEventListener("click", async ()=>{
+    hideCurl();
+
+    const token = tokenEl.value.trim();
+    const msgUrl = msgUrlEl.value.trim();
+    const btnText = btnTextEl.value.trim();
+    const btnUrl  = btnUrlEl.value.trim();
+
+    if(!looksLikeToken(token)){
+      setStatus("Введите корректный токен бота (похоже, сейчас не токен).", "bad");
+      return;
+    }
+    let parsed;
+    try{
+      parsed = parseTgMessageUrl(msgUrl);
+    }catch(e){
+      setStatus(e.message, "bad");
+      return;
+    }
+    if(!btnText){
+      setStatus("Введите текст кнопки.", "bad");
+      return;
+    }
+    if(!looksLikeButtonUrl(btnUrl)){
+      setStatus("Ссылка кнопки должна начинаться с https://, http://, tg:// или быть t.me/…", "bad");
+      return;
+    }
+
+    const payload = {
+      chat_id: parsed.chat_id,
+      message_id: parsed.message_id,
+      reply_markup: buildReplyMarkup(btnText, btnUrl),
+    };
+
+    const apiUrl = `https://api.telegram.org/bot${encodeURIComponent(token)}/editMessageReplyMarkup`;
+
+    goEl.disabled = true;
+    goEl.innerHTML = '<span class="spinner"></span>Отправляем…';
+    setStatus("Отправляем запрос в Telegram Bot API…", "");
+
+    try{
+      const res = await fetch(apiUrl, {
+        method: "POST",
+        headers: { "Content-Type":"application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const text = await res.text();
+      let data;
+      try { data = JSON.parse(text); } catch(_) { data = { raw: text }; }
+
+      if(res.ok && data && data.ok){
+        setStatus(
+          "✅ Успех!\n" +
+          `Кнопка установлена для ${payload.chat_id}/${payload.message_id}.\n\n` +
+          "Важно: если у сообщения уже была inline-клавиатура, она будет заменена новой (из одной кнопки).",
+          "ok"
+        );
+      }else{
+        const desc = (data && data.description) ? data.description : (text || "Неизвестная ошибка");
+        const code = (data && data.error_code) ? data.error_code : res.status;
+        setStatus(
+          "❌ Не получилось.\n" +
+          `HTTP/Telegram code: ${code}\n` +
+          `Описание: ${desc}\n\n` +
+          "Частые причины:\n" +
+          "• Сообщение не отправлено ботом\n" +
+          "• Бот не админ канала / нет прав постить\n" +
+          "• Неверный chat_id/message_id\n",
+          "bad"
+        );
+      }
+    }catch(err){
+      // very often: CORS / network restrictions
+      setStatus(
+        "⚠️ Запрос из браузера не прошёл (часто это CORS/сеть/блокировки).\n" +
+        "Ниже — готовая команда cURL, выполните её в терминале: она покажет точный ответ Telegram.\n\n" +
+        `Техническая ошибка: ${String(err)}`,
+        "bad"
+      );
+      showCurl(buildCurl(token, payload));
+    }finally{
+      goEl.disabled = false;
+      goEl.textContent = "Добавить кнопку";
+    }
+  });
+
+})();
+</script>
+</body>
+</html>
